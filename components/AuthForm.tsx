@@ -50,24 +50,26 @@ const AuthForm = ({ type} : { type : FormType}) => {
    async function onSubmit(values: z.infer<typeof formSchema>) {
     try{
       if (type ==='sign-up'){
-        const { name , email , password } = values ;
+        
+          const { name, email, password } = values;
 
-        const userCredentials = await createUserWithEmailAndPassword(auth, email, password );
+  // create firebase auth user
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-        const result = await signUp({
-          uid : userCredentials.user.uid,
-          name : name!,
-          email,
-          password,
+  const idToken = await userCredential.user.getIdToken();
+  const uid = userCredential.user.uid;
 
+  // call server action (Firestore save)
+  const res = await signUp({
+    uid,
+    name,
+    email,
+  });
 
-        })
-
-        if(!result?.success){
-          toast.error(result?.message);
-          return;
-        }
-
+  if (!res.success) {
+    toast.error(res.message);
+    return;
+  }
         toast.success("Account created successfully");
         router.push('/sign-in');
       } else {
