@@ -17,7 +17,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object } = await generateObject({
+    const { object : { totalScore, categoryScores, strengths, areaForImprovement, finalAssessment} } = await generateObject({
       model: google("gemini-2.0-flash-001", {
         structuredOutputs: false,
       }),
@@ -78,14 +78,14 @@ export async function getFeedbackByInterviewId(
   const { interviewId, userId } = params;
 
    
-  const querySnapshot = await db
+  const feedback = await db  //querySnapshot
     .collection("feedback")
     .where("interviewId", "==", interviewId)
     .where("userId", "==", userId)
-    .limit(1)
+    .limit(1)  
     .get();
 
-  if (querySnapshot.empty) return null;
+  if (feedback.empty) return null;
 
   const feedbackDoc = querySnapshot.docs[0];
   return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
